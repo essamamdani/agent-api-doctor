@@ -1,0 +1,10 @@
+{
+  "name": "agent-api-doctor",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "A local smoke test for OpenAI-compatible model endpoints used by coding agents.",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": { "test": "node --test" }
+}
