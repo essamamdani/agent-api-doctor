@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { once } from "node:events";
 import test from "node:test";
-import { runDoctor } from "../src/doctor.mjs";
+import { formatResult, runDoctor } from "../src/doctor.mjs";
 
 test("checks model discovery and a forced tool call without executing it", async (t) => {
   const server = createServer(async (req, res) => {
@@ -39,4 +39,9 @@ test("checks model discovery and a forced tool call without executing it", async
 
 test("rejects a missing model before making a request", async () => {
   await assert.rejects(runDoctor({ baseUrl: "http://127.0.0.1:8317/v1", model: "" }), /OPENAI_MODEL/);
+});
+
+test("formats a stable JSON report without endpoint credentials", () => {
+  const report = { modelsEndpoint: "ok", modelListed: true, chatCompletions: true, toolCall: true, toolArguments: true, chatStatus: 200 };
+  assert.deepEqual(JSON.parse(formatResult(report, true)), report);
 });

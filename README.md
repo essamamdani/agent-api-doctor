@@ -19,6 +19,14 @@ node src/doctor.mjs
 
 The diagnostic sends one synthetic, harmless prompt and a function schema to the endpoint you configure. That request leaves your machine and is subject to that provider's data-retention terms. The tool does not send your repository, prompts, or files. It does not print or save the key or response body.
 
+For scripts and CI, pass `--json` to print the same checks as a JSON object:
+
+```sh
+node src/doctor.mjs --json
+```
+
+The report contains only check results and the HTTP status; credentials and response bodies are not included. The process exits nonzero when chat completion or the forced tool-call check fails.
+
 ## Checks
 
 - `GET /models`: reports whether the route works and whether the requested ID is listed. A missing model-list route is reported as unsupported rather than treated as a failure.

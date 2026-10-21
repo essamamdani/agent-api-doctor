@@ -60,17 +60,30 @@ export async function runDoctor({ baseUrl, apiKey = "", model, fetchImpl = fetch
   };
 }
 
+export function formatResult(result, json = false) {
+  if (json) return JSON.stringify(result, null, 2);
+  return [
+    `Model list: ${result.modelsEndpoint}${result.modelListed ? " (model ID found)" : ""}`,
+    `Chat Completions: ${result.chatCompletions ? "PASS" : `FAIL (HTTP ${result.chatStatus})`}`,
+    `Forced tool call: ${result.toolCall ? "PASS" : "FAIL"}`,
+    `Tool arguments: ${result.toolArguments ? "PASS" : "FAIL"}`,
+  ].join("\n");
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const baseUrl = process.env.OPENAI_BASE_URL || "http://127.0.0.1:8317/v1";
+  const json = process.argv.includes("--json");
   try {
     const result = await runDoctor({ baseUrl, apiKey: process.env.OPENAI_API_KEY, model: process.env.OPENAI_MODEL });
-    console.log(`Model list: ${result.modelsEndpoint}${result.modelListed ? " (model ID found)" : ""}`);
-    console.log(`Chat Completions: ${result.chatCompletions ? "PASS" : `FAIL (HTTP ${result.chatStatus})`}`);
-    console.log(`Forced tool call: ${result.toolCall ? "PASS" : "FAIL"}`);
-    console.log(`Tool arguments: ${result.toolArguments ? "PASS" : "FAIL"}`);
+    console.log(formatResult(result, json));
     if (!result.chatCompletions || !result.toolCall || !result.toolArguments) process.exitCode = 1;
   } catch (error) {
-    console.error(error.name === "TimeoutError" ? "Request timed out after 20 seconds." : error.message);
+    const message = error.name === "TimeoutError"
+      ? "Request timed out after 20 seconds."
+      : error.message.startsWith("Set OPENAI_MODEL") || error.message.startsWith("OPENAI_BASE_URL")
+        ? error.message
+        : "Request failed. Check endpoint connectivity and settings.";
+    console.error(json ? JSON.stringify({ error: message }) : message);
     process.exitCode = 1;
   }
 }
